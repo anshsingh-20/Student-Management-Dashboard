@@ -1,25 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { saveLogin } from "../data/api.js";
 
-export default function LoginPage({ login, onSaveLogin, onNavigate }) {
-  const [form, setForm] = useState(login);
-
-  useEffect(() => {
-    if (login) {
-      setForm(login);
-    }
-  }, [login]);
-
-  if (!login || !form) {
-    return (
-      <section className="login-layout">
-        <div className="login-panel">
-          <p className="eyebrow">Welcome back</p>
-          <h2>Sign in to manage student records</h2>
-          <p>Loading login settings...</p>
-        </div>
-      </section>
-    );
-  }
+export default function LoginPage({ onNavigate }) {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    rememberMe: true
+  });
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   function updateField(event) {
     const { name, type, checked, value } = event.target;
@@ -29,10 +18,19 @@ export default function LoginPage({ login, onSaveLogin, onNavigate }) {
     }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    onSaveLogin(form);
-    onNavigate("dashboard");
+    setError("");
+    setIsSaving(true);
+
+    try {
+      await saveLogin(form);
+      onNavigate("dashboard");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -41,6 +39,7 @@ export default function LoginPage({ login, onSaveLogin, onNavigate }) {
         <p className="eyebrow">Welcome back</p>
         <h2>Sign in to manage student records</h2>
         <form className="stacked-form" onSubmit={handleSubmit}>
+          {error ? <div className="form-alert">{error}</div> : null}
           <label>
             Email
             <input name="email" type="email" placeholder="admin@school.edu" value={form.email} onChange={updateField} />
@@ -56,8 +55,8 @@ export default function LoginPage({ login, onSaveLogin, onNavigate }) {
             </label>
             <a href="#forgot">Forgot password?</a>
           </div>
-          <button type="submit" className="primary-btn">
-            Login
+          <button type="submit" className="primary-btn" disabled={isSaving}>
+            {isSaving ? "Saving..." : "Login"}
           </button>
         </form>
       </div>

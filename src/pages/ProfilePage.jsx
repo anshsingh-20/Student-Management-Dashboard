@@ -1,36 +1,58 @@
 import { useState, useEffect } from "react";
+import { fetchProfile, saveProfile } from "../data/api.js";
 
-export default function ProfilePage({ profile, onSaveProfile }) {
-  const [form, setForm] = useState(profile);
+const defaultProfile = {
+  name: "Admin User",
+  email: "admin@school.edu",
+  role: "Administrator",
+  phone: "+91 90000 11111"
+};
+
+export default function ProfilePage() {
+  const [form, setForm] = useState(defaultProfile);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (profile) {
-      setForm(profile);
-    }
-  }, [profile]);
+    let isCurrent = true;
 
-  if (!profile || !form) {
-    return (
-      <section className="page-section narrow">
-        <div className="page-header">
-          <div>
-            <p className="eyebrow">Account</p>
-            <h2>Profile Page</h2>
-          </div>
-        </div>
-        <p>Loading profile...</p>
-      </section>
-    );
-  }
+    async function loadProfile() {
+      try {
+        const savedProfile = await fetchProfile();
+        if (isCurrent) {
+          setForm({ ...defaultProfile, ...savedProfile });
+        }
+      } catch (requestError) {
+        if (isCurrent) {
+          setError(requestError.message);
+        }
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   function updateField(event) {
     const { name, value } = event.target;
     setForm((currentForm) => ({ ...currentForm, [name]: value }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    onSaveProfile(form);
+    setError("");
+    setIsSaving(true);
+
+    try {
+      await saveProfile(form);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -51,6 +73,7 @@ export default function ProfilePage({ profile, onSaveProfile }) {
       </article>
 
       <form className="form-card" onSubmit={handleSubmit}>
+        {error ? <div className="form-alert">{error}</div> : null}
         <div className="two-column">
           <label>
             Name
@@ -69,7 +92,9 @@ export default function ProfilePage({ profile, onSaveProfile }) {
             <input name="phone" type="tel" value={form.phone} onChange={updateField} />
           </label>
         </div>
-        <button className="primary-btn" type="submit">Save Profile</button>
+        <button className="primary-btn" type="submit" disabled={isSaving}>
+          {isSaving ? "Saving..." : "Save Profile"}
+        </button>
       </form>
     </section>
   );

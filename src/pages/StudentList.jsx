@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function StudentList({ students, onViewStudent }) {
+export default function StudentList({ students, isLoading, onSearchStudents, onViewStudent }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const filteredStudents = students.filter((student) => {
-    const searchableText = `${student.id} ${student.name} ${student.className} ${student.section} ${student.rollNo} ${student.status}`.toLowerCase();
-    return searchableText.includes(searchTerm.toLowerCase());
-  });
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      onSearchStudents(searchTerm);
+    }, 250);
+
+    return () => clearTimeout(timeoutId);
+  }, [onSearchStudents, searchTerm]);
 
   return (
     <section className="page-section">
@@ -23,6 +27,8 @@ export default function StudentList({ students, onViewStudent }) {
         />
       </div>
 
+      {isLoading ? <p className="muted-text">Loading student records...</p> : null}
+
       <div className="table-wrap">
         <table>
           <thead>
@@ -36,7 +42,7 @@ export default function StudentList({ students, onViewStudent }) {
             </tr>
           </thead>
           <tbody>
-            {filteredStudents.map((student) => (
+            {students.map((student) => (
               <tr key={student.id}>
                 <td>{student.id}</td>
                 <td>{student.name}</td>
@@ -50,6 +56,11 @@ export default function StudentList({ students, onViewStudent }) {
                 </td>
               </tr>
             ))}
+            {!isLoading && students.length === 0 ? (
+              <tr>
+                <td colSpan="6">No matching students found.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

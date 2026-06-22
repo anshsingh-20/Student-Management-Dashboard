@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 export default function EditStudent({ student, onUpdateStudent }) {
   const [form, setForm] = useState(student);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setForm(student);
@@ -26,9 +28,18 @@ export default function EditStudent({ student, onUpdateStudent }) {
     setForm((currentForm) => ({ ...currentForm, [name]: value }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    onUpdateStudent(form);
+    setError("");
+    setIsSaving(true);
+
+    try {
+      await onUpdateStudent(form);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -41,6 +52,7 @@ export default function EditStudent({ student, onUpdateStudent }) {
       </div>
 
       <form className="form-card" onSubmit={handleSubmit}>
+        {error ? <div className="form-alert">{error}</div> : null}
         <div className="two-column">
           <label>
             Full Name
@@ -98,7 +110,9 @@ export default function EditStudent({ student, onUpdateStudent }) {
           Address
           <textarea name="address" rows="4" value={form.address} onChange={updateField} />
         </label>
-        <button className="primary-btn" type="submit">Update Student</button>
+        <button className="primary-btn" type="submit" disabled={isSaving}>
+          {isSaving ? "Updating..." : "Update Student"}
+        </button>
       </form>
     </section>
   );

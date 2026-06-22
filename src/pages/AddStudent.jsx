@@ -18,28 +18,39 @@ const initialForm = {
 
 export default function AddStudent({ onAddStudent }) {
   const [form, setForm] = useState(initialForm);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   function updateField(event) {
     const { name, value } = event.target;
     setForm((currentForm) => ({ ...currentForm, [name]: value }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    onAddStudent({
-      ...form,
-      id: form.id.trim(),
-      name: form.name.trim(),
-      guardian: form.guardian.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      rollNo: form.rollNo.trim(),
-      address: form.address.trim(),
-      attendance: form.attendance.trim() || "0%",
-      grade: form.grade.trim() || "N/A"
-    });
-    setForm(initialForm);
+    setError("");
+    setIsSaving(true);
+
+    try {
+      await onAddStudent({
+        ...form,
+        id: form.id.trim(),
+        name: form.name.trim(),
+        guardian: form.guardian.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        rollNo: form.rollNo.trim(),
+        address: form.address.trim(),
+        attendance: form.attendance.trim() || "0%",
+        grade: form.grade.trim() || "N/A"
+      });
+      setForm(initialForm);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -52,6 +63,7 @@ export default function AddStudent({ onAddStudent }) {
       </div>
 
       <form className="form-card" onSubmit={handleSubmit}>
+        {error ? <div className="form-alert">{error}</div> : null}
         <div className="two-column">
           <label>
             Full Name
@@ -115,7 +127,9 @@ export default function AddStudent({ onAddStudent }) {
           Address
           <textarea name="address" rows="4" placeholder="Student address" value={form.address} onChange={updateField} />
         </label>
-        <button className="primary-btn" type="submit">Save Student</button>
+        <button className="primary-btn" type="submit" disabled={isSaving}>
+          {isSaving ? "Saving..." : "Save Student"}
+        </button>
       </form>
     </section>
   );
