@@ -1,9 +1,12 @@
 const crypto = require("node:crypto");
 const http = require("node:http");
 const { MongoClient } = require("mongodb");
+require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/";
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  "mongodb+srv://anshsingh75751_db_user:ansh%40123@cluster0.rxz82kd.mongodb.net/";
 const DB_NAME = process.env.DB_NAME || "student_management";
 
 const seedStudents = [
@@ -20,7 +23,7 @@ const seedStudents = [
     address: "Sector 17, Chandigarh",
     attendance: "96%",
     grade: "A",
-    joined: "2024-04-12"
+    joined: "2024-04-12",
   },
   {
     id: "STU-1002",
@@ -35,7 +38,7 @@ const seedStudents = [
     address: "Model Town, Delhi",
     attendance: "91%",
     grade: "B+",
-    joined: "2024-05-03"
+    joined: "2024-05-03",
   },
   {
     id: "STU-1003",
@@ -50,15 +53,15 @@ const seedStudents = [
     address: "Baner, Pune",
     attendance: "83%",
     grade: "B",
-    joined: "2023-07-18"
-  }
+    joined: "2023-07-18",
+  },
 ];
 
 const defaultProfile = {
   name: "Admin User",
   email: "admin@school.edu",
   role: "Administrator",
-  phone: "+91 90000 11111"
+  phone: "+91 90000 11111",
 };
 
 const client = new MongoClient(MONGODB_URI);
@@ -69,7 +72,7 @@ function sendJson(response, statusCode, payload) {
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
     "Access-Control-Allow-Origin": "*",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
   });
   response.end(statusCode === 204 ? "" : JSON.stringify(payload));
 }
@@ -120,8 +123,8 @@ async function connectDatabase() {
       seedStudents.map((student) => ({
         ...student,
         createdAt: new Date(),
-        updatedAt: new Date()
-      }))
+        updatedAt: new Date(),
+      })),
     );
   }
 
@@ -147,10 +150,10 @@ async function handleStudents(request, response, url) {
             "phone",
             "guardian",
             "address",
-            "grade"
+            "grade",
           ].map((field) => ({
-            [field]: { $regex: escapeRegex(search), $options: "i" }
-          }))
+            [field]: { $regex: escapeRegex(search), $options: "i" },
+          })),
         }
       : {};
     const result = await students.find(query).sort({ createdAt: -1 }).toArray();
@@ -160,7 +163,9 @@ async function handleStudents(request, response, url) {
   if (request.method === "POST") {
     const student = await readBody(request);
     if (!student.id || !student.name || !student.className) {
-      return sendJson(response, 400, { message: "Student ID, name, and class are required." });
+      return sendJson(response, 400, {
+        message: "Student ID, name, and class are required.",
+      });
     }
 
     const now = new Date();
@@ -168,9 +173,9 @@ async function handleStudents(request, response, url) {
       { id: student.id },
       {
         $set: { ...student, updatedAt: now },
-        $setOnInsert: { createdAt: now }
+        $setOnInsert: { createdAt: now },
       },
-      { upsert: true }
+      { upsert: true },
     );
     const savedStudent = await students.findOne({ id: student.id });
     return sendJson(response, 201, cleanDocument(savedStudent));
@@ -189,12 +194,14 @@ async function handleStudentById(request, response, studentId) {
   const student = await readBody(request);
 
   if (!student.id || !student.name || !student.className) {
-    return sendJson(response, 400, { message: "Student ID, name, and class are required." });
+    return sendJson(response, 400, {
+      message: "Student ID, name, and class are required.",
+    });
   }
 
   await students.updateOne(
     { id: decodeURIComponent(studentId) },
-    { $set: { ...student, updatedAt: new Date() } }
+    { $set: { ...student, updatedAt: new Date() } },
   );
   const savedStudent = await students.findOne({ id: student.id });
   return sendJson(response, 200, cleanDocument(savedStudent));
@@ -211,7 +218,7 @@ async function handleLogin(request, response) {
     email: login.email,
     passwordHash: hashPassword(login.password || ""),
     rememberMe: Boolean(login.rememberMe),
-    createdAt: new Date()
+    createdAt: new Date(),
   });
 
   return sendJson(response, 201, { message: "Login saved." });
@@ -223,7 +230,11 @@ async function handleProfile(request, response) {
 
   if (request.method === "GET") {
     const profile = await profiles.findOne({ key: "admin" });
-    return sendJson(response, 200, profile ? cleanDocument(profile) : defaultProfile);
+    return sendJson(
+      response,
+      200,
+      profile ? cleanDocument(profile) : defaultProfile,
+    );
   }
 
   if (request.method === "POST") {
@@ -231,7 +242,7 @@ async function handleProfile(request, response) {
     await profiles.updateOne(
       { key: "admin" },
       { $set: { ...profile, key: "admin", updatedAt: new Date() } },
-      { upsert: true }
+      { upsert: true },
     );
     return sendJson(response, 201, profile);
   }
@@ -257,7 +268,11 @@ const server = http.createServer(async (request, response) => {
     }
 
     if (url.pathname.startsWith("/api/students/")) {
-      return handleStudentById(request, response, url.pathname.replace("/api/students/", ""));
+      return handleStudentById(
+        request,
+        response,
+        url.pathname.replace("/api/students/", ""),
+      );
     }
 
     if (url.pathname === "/api/login") {
@@ -271,7 +286,9 @@ const server = http.createServer(async (request, response) => {
     return sendJson(response, 404, { message: "Route not found." });
   } catch (error) {
     console.error(error);
-    return sendJson(response, 500, { message: error.message || "Server error." });
+    return sendJson(response, 500, {
+      message: error.message || "Server error.",
+    });
   }
 });
 

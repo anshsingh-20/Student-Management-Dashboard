@@ -1,6 +1,36 @@
 {
   "students": [
     {
+      "name": "arpit",
+      "id": "abc-123",
+      "className": "Grade 11",
+      "section": "A",
+      "guardian": "jowepfopjiwoewei",
+      "email": "anshsingh75751@gmail.com",
+      "phone": "2390543454",
+      "rollNo": "",
+      "address": "347 O BLOCK YASHODA NAGAR ,KANPUR",
+      "status": "Active",
+      "attendance": "0%",
+      "grade": "N/A",
+      "joined": "2026-06-15"
+    },
+    {
+      "name": "Ansh Singh",
+      "id": "abc-123",
+      "className": "Grade 8",
+      "section": "A",
+      "guardian": "xyz",
+      "email": "anshsingh75751@gmail.com",
+      "phone": "+919984792020",
+      "rollNo": "23",
+      "address": "347 O BLOCK YASHODA NAGAR ,KANPUR",
+      "status": "Active",
+      "attendance": "80%",
+      "grade": "A",
+      "joined": "2026-06-11"
+    },
+    {
       "id": "STU-1001",
       "name": "Aarav Sharma",
       "className": "Grade 10",
@@ -53,8 +83,8 @@
     "phone": "+91 90000 11111"
   },
   "login": {
-    "email": "",
-    "password": "",
+    "email": "anshsingh75751@gmail.com",
+    "password": "wkejfuoy",
     "rememberMe": true
   }
 }

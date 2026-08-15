@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
+    "dotenv": "^16.4.5",
     "mongodb": "^7.3.0",
     "react": "latest",
     "react-dom": "latest",
